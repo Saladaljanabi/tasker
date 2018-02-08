@@ -12,7 +12,7 @@ class toDoListViewController: UITableViewController {
     
     /// مصفوفه
     
-    let itemArray = ["ابلع" ,"اضرب" ,"اشرب"] /// السوالف الي تطلع بال  table view
+    var itemArray = ["ابلع" ,"اضرب" ,"اشرب"] /// السوالف الي تطلع بال  table view
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -60,8 +60,27 @@ class toDoListViewController: UITableViewController {
         
     }
     
+    ///MARK - add new items
+   من تدوس  ///
     
-    
+    @IBAction func addButtomPressed(_ sender: UIBarButtonItem) {
+        var textFiled = UITextField() ///لوكل فاريبل علمود يجيب معلومات ابين ال٢ كلوشر
+        let alert = UIAlertController(title: "add a new task", message: "", preferredStyle: .alert)
+        
+        let action = UIAlertAction(title: "add item", style: .default) { (action) in
+            //what will happen when the user hit the add buttom on the uialert
+            
+            self.itemArray.append(textFiled.text!) ////add to the array what ever the user type in the box(alert)
+            self.tableView.reloadData() ///refresh the table view to add the new cell
+        }
+        alert.addTextField { (alertTextFiled) in
+            alertTextFiled.placeholder = "create new item"
+            textFiled = alertTextFiled
+            
+        }
+            alert.addAction(action)
+            self.present(alert, animated: true, completion: nil)
+    }
     
     }
 
