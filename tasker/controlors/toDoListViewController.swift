@@ -14,35 +14,20 @@ class toDoListViewController: UITableViewController {
     
     var itemArray = [item]() /// السوالف الي تطلع بال  table view
 ///in order to use user defullt
-    let defult = UserDefaults.standard
+    
+  let dataFilePath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first?.appendingPathComponent("items.plist")
     override func viewDidLoad() {
+        
         super.viewDidLoad()
         
-        let newItem = item()
-        newItem.title = "اشرب"
-        itemArray.append(newItem)
+        //save the data
         
-        let newItem2 = item()
-        newItem2.title = "ابلع"
-        itemArray.append(newItem2)
+    
+       
         
         
-        
-        let newItem3 = item()
-        newItem3.title = "اضرب"
-        itemArray.append(newItem3)
-        
-        
-        
-        
-        
-        ///to retrive the data
-        if let item = defult.array(forKey: "toDoListArray") as? [item] {
-
-            itemArray = item
-
-
-        }
+loaditems()
+  
         }
         
         // Do any additional setup after loading the view, typically from a nib.
@@ -110,7 +95,7 @@ class toDoListViewController: UITableViewController {
 //            tableView.cellForRow(at: indexPath)?.accessoryType = .checkmark
 //
 //        }
-           tableView.reloadData()
+           saveitems()
         
         /// to remove gray highlighting when we select a cell -
         
@@ -126,16 +111,25 @@ class toDoListViewController: UITableViewController {
     ///MARK - add new items
    /// when you hit the plus barbuttom and to add items to your table view
     @IBAction func addButtomPressed(_ sender: UIBarButtonItem) {
+        
         var textFiled = UITextField() ///لوكل فاريبل علمود يجيب معلومات ابين ال٢ كلوشر
+        
         let alert = UIAlertController(title: "add a new task", message: "", preferredStyle: .alert)
         
+        
         let action = UIAlertAction(title: "add item", style: .default) { (action) in
+            
             //what will happen when the user hit the add buttom on the uialert
             let newItem = item()
             newItem.title = textFiled.text!
             
             self.itemArray.append(newItem) ////add to the array what ever the user type in the box(alert)
-            self.defult.setValue(self.itemArray, forKey: "toDoListArray")
+            
+            let encoder = PropertyListEncoder()
+            
+        self.saveitems()
+            
+            
             self.tableView.reloadData() ///refresh the table view to add the new cell
         }
         alert.addTextField { (alertTextFiled) in
@@ -147,6 +141,81 @@ class toDoListViewController: UITableViewController {
             self.present(alert, animated: true, completion: nil)
     }
     
+  
+
+
+func saveitems() {
+    
+    let encoder = PropertyListEncoder()
+    
+    do {
+        let data = try encoder.encode(itemArray)
+        try data.write(to: dataFilePath!)
+    }catch{
+        print("error encoding item array, \(error)")
     }
+    self.tableView.reloadData()
+    }
+
+
+
+
+        
+        
+        
+    func loaditems() {
+        if let data = try? Data(contentsOf: dataFilePath!) {
+            
+            let decoder = PropertyListDecoder()
+            do {
+                itemArray = try decoder.decode([item].self, from: data)
+            }catch{
+                
+                print("erorr \(error)")
+            }
+            
+            
+            
+            
+        }
+    }
+
+    
+   
+    
+    
+
+
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 

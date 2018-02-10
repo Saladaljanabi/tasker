@@ -13,10 +13,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     var window: UIWindow?
 
-//This get called when your app gets loaded app (before viewdid load)
+//This get called when your app gets loaded app (before view did load)
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
         ///to know the path of our project in the phone
-        print(NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true).last! as String)
         return true
     }
 //this tregered when something happend to the phone while the app is running(like recive a call)
