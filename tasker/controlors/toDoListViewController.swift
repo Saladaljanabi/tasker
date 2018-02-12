@@ -7,26 +7,35 @@
 //
 
 import UIKit
-
-class toDoListViewController: UITableViewController {
+import CoreData
+class toDoListViewController: UITableViewController{
     
     /// مصفوفه
     
-    var itemArray = [item]() /// السوالف الي تطلع بال  table view
-///in order to use user defullt
+    var itemArray = [Item]() /// السوالف الي تطلع بال  table view
+    var selectedcatogray : Categray? {
+        didSet{
+            loaditems()
+
+        }
+    }
+    ///in order to use user defullt
     
-  let dataFilePath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first?.appendingPathComponent("items.plist")
+//  let dataFilePath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first?.appendingPathComponent("items.plist")
+    // for core data
+    let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
     override func viewDidLoad() {
         
         super.viewDidLoad()
+     
+      
+        print(FileManager.default.urls(for: .documentDirectory, in: .userDomainMask))
         
         //save the data
         
-    
+   
        
         
-        
-loaditems()
   
         }
         
@@ -85,6 +94,10 @@ loaditems()
 //
         
         
+        ///to remove the data from our context is :-
+//        context.delete(itemArray[indexPath.row])
+//        itemArray.remove(at: indexPath.row) ///indexpath.row is the slected row
+        
         
         ///to remove the check box when we hit the cell again - (dont use)
         
@@ -119,10 +132,12 @@ loaditems()
         
         let action = UIAlertAction(title: "add item", style: .default) { (action) in
             
-            //what will happen when the user hit the add buttom on the uialert
-            let newItem = item()
-            newItem.title = textFiled.text!
             
+            //what will happen when the user hit the add buttom on the uialert
+            let newItem = Item(context: self.context)
+            newItem.title = textFiled.text!
+            newItem.done = false
+            newItem.percentCategory = self.selectedcatogray
             self.itemArray.append(newItem) ////add to the array what ever the user type in the box(alert)
             
             let encoder = PropertyListEncoder()
@@ -146,13 +161,11 @@ loaditems()
 
 func saveitems() {
     
-    let encoder = PropertyListEncoder()
     
     do {
-        let data = try encoder.encode(itemArray)
-        try data.write(to: dataFilePath!)
+        try context.save()
     }catch{
-        print("error encoding item array, \(error)")
+        print("eroor is oucuroe \(error)")
     }
     self.tableView.reloadData()
     }
@@ -162,32 +175,103 @@ func saveitems() {
 
         
         
+
+    func loaditems(with request: NSFetchRequest<Item> = Item.fetchRequest(), predicate: NSPredicate? = nil) { //<> means return
+    let categorypredicat = NSPredicate(format: "percentCategory.name MATCHES %@", selectedcatogray!.name!)
         
-    func loaditems() {
-        if let data = try? Data(contentsOf: dataFilePath!) {
-            
-            let decoder = PropertyListDecoder()
-            do {
-                itemArray = try decoder.decode([item].self, from: data)
-            }catch{
-                
-                print("erorr \(error)")
-            }
-            
-            
-            
+        if let addtionpredicate = predicate {
+            request.predicate = NSCompoundPredicate(andPredicateWithSubpredicates: [categorypredicat, addtionpredicate])
+        }else{
+            request.predicate = categorypredicat
             
         }
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+//
+//        let compoundpredicat = NSCompoundPredicate(andPredicateWithSubPredicate: [categoryPredicate,predicate])
+//
+//        request.predicate = compoundpredicat
+//
+//
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        do {
+       itemArray = try context.fetch(request)
+        }catch{
+            print("Erro form featch \(error)")
+        }
+        tableView.reloadData()
+        }
+
+    
+    
     }
 
+//MARK: - search bar methods
+extension toDoListViewController: UISearchBarDelegate {
     
-   
+    func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
+        let request : NSFetchRequest<Item> = Item.fetchRequest()
+        
+        //code for query
+        let predicate = NSPredicate(format: "title CONTAINS[cd] %@", searchBar.text!) //[cd] means your array can search in [cd]
+        
+       
+        
+        request.sortDescriptors = [NSSortDescriptor(key: "title", ascending: true)]
+        loaditems(with: request, predicate: predicate)
+        //loaditem line equivilant to this item:-
+        
+//        do {
+//            itemArray = try context.fetch(request)
+//        }catch{
+//            print("Erro form featch \(error)")
+//        }
+        
+        
+        
+        
+        
+    }
     
     
+    func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) { ///when you write the table view load your search data and when you want to get to the normal tableview this method will return all your old data of cells
+        if searchBar.text?.count == 0 {
+            
+            loaditems()
+            
+            DispatchQueue.main.async { //مثل الواسطه
+             searchBar.resignFirstResponder()//remove the curser from the searchbar and remove the keyborad when search
 
+            }
 
-
+        }
+    }
+    
+    
 }
+
+    
+
+
+
+
 
 
 
